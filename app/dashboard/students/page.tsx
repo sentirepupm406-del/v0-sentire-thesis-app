@@ -1,51 +1,100 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { TeacherPortalClient } from '@/components/teacher-portal-client'
+import { StudentInsightCard } from '@/components/student-insight-card'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
-export default async function StudentsPage() {
+export default async function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+
   const supabase = await createClient()
-
-  // 1. Verify User Session & Role on the Server
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
-
-  const { data: profile } = await supabase
+  const { data: student, error } = await supabase
     .from('profiles')
-    .select('role')
-    .eq('id', user.id)
+    .select('*')
+    .eq('id', id)
     .single()
 
-  // SECURITY: If a student tries to manually type /dashboard/students, 
-  // kick them to their own wellness page.
-  if (profile?.role === 'student') {
-    redirect('/dashboard/wellness')
+  if (error || !student) {
+    redirect('/dashboard/students')
   }
 
-  // 2. Fetch all student profiles
-  const { data: students } = await supabase
-    .from('profiles')
-    .select('id, full_name, student_id, course, year_level, created_at')
-    .eq('role', 'student')
-    .order('full_name', { ascending: true })
-
-  // 3. Fetch most recent wellness log per student
   const { data: wellnessLogs } = await supabase
     .from('wellness_logs')
-    .select('user_id, mood, stress, sleep_hours, notes, logged_at')
+    .select('*')
+    .eq('user_id', id)
     .order('logged_at', { ascending: false })
 
-  // 4. Fetch all academic records
   const { data: academicRecords } = await supabase
     .from('academics')
-    .select('id, user_id, subject, grade, units, semester, school_year')
+    .select('*')
+    .eq('user_id', id)
+
+  const latestWellness = wellnessLogs?.[0]
 
   return (
-    <div className="flex-1 h-full overflow-y-auto">
-      <TeacherPortalClient
-        students={students ?? []}
-        wellnessLogs={wellnessLogs ?? []}
-        academicRecords={academicRecords ?? []}
-      />
+    <div className="p-6 bg-slate-50 min-h-screen">
+      <div className="mb-6">
+        <Link href="/dashboard/students">
+          <Button variant="outline" className="gap-2 mb-4">
+            <ArrowLeft size={16} /> Back to Students
+          </Button>
+        </Link>
+        <h1 className="text-3xl font-bold text-slate-900">{student.full_name}</h1>
+        <p className="text-slate-600 text-sm mt-1">{student.course} | Year {student.year_level}</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <h3 className="font-semibold text-slate-900 mb-3">Student Information</h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <p className="text-slate-600">Student ID</p>
+                <p className="font-medium text-slate-900">{student.student_id}</p>
+              </div>
+              <div>
+                <p className="text-slate-600">Course</p>
+                <p className="font-medium text-slate-900">{student.course}</p>
+              </div>
+              <div>
+                <p className="text-slate-600">Year Level</p>
+                <p className="font-medium text-slate-900">{student.year_level}</p>
+              </div>
+            </div>
+          </div>
+
+          {latestWellness && (
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <h3 className="font-semibold text-slate-900 mb-3">Latest Wellness</h3>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <p className="text-slate-600">Mood</p>
+                  <p className="font-medium text-slate-900">{latestWellness.mood}/5</p>
+                </div>
+                <div>
+                  <p className="text-slate-600">Stress Level</p>
+                  <p className="font-medium text-slate-900">{latestWellness.stress}/5</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-2 flex justify-center">
+          <StudentInsightCard
+            student={{
+              id: student.id,
+              name: student.full_name,
+              mood: latestWellness?.mood ?? 3,
+              stress: latestWellness?.stress ?? 3,
+              sleepHours: latestWellness?.sleep_hours,
+              notes: latestWellness?.notes,
+              gwa: student.gwa,
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 }
