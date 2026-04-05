@@ -112,45 +112,44 @@ export async function submitWellnessSurvey(data: {
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
+  const testPassword = "PUP_Student_2026!"
 
   const email = (formData.get('email') as string).trim().toLowerCase()
   const password = (formData.get('password') as string).trim()
 
-  const { error, data } = await supabase.auth.signInWithPassword({
+  console.log("[v0] Login attempt:", email)
+
+  let loginData = await supabase.auth.signInWithPassword({
     email,
     password
   })
 
-  if (error) {
-    console.error("[v0] Auth Error:", error.message, "- email:", email)
-    // If login fails, try to create the user on-the-fly if they're using the test password
-    if (password === "PUP_Student_2026!" && email) {
-      const admin = createAdminClient()
-      const { data: userData, error: createError } = await admin.auth.admin.createUser({
-        email: email,
-        password: password,
-        email_confirm: true,
-        user_metadata: { full_name: email.split('@')[0], role: 'student' }
+  // If login fails, try to create the user on-the-fly if they're using the test password
+  if (loginData.error && password === testPassword && email) {
+    console.log("[v0] Initial login failed, attempting auto-create...")
+    const admin = createAdminClient()
+    const { data: userData, error: createError } = await admin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true,
+      user_metadata: { full_name: email.split('@')[0], role: 'student' }
+    })
+
+    console.log("[v0] Auto-create result:", userData?.user?.id ? "success" : "failed", createError?.message)
+
+    if (!createError && userData?.user?.id) {
+      // Now try to sign in with the newly created user
+      loginData = await supabase.auth.signInWithPassword({
+        email,
+        password
       })
-
-      if (!createError && userData?.user?.id) {
-        console.log("[v0] Auto-created user, attempting sign in...")
-        // Now try to sign in with the newly created user
-        const { error: retryError, data: retryData } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
-
-        if (retryError) {
-          console.error("[v0] Retry login failed:", retryError.message)
-          return { error: "Login failed even after user creation: " + retryError.message }
-        }
-
-        revalidatePath('/', 'layout')
-        redirect('/dashboard')
-      }
+      console.log("[v0] Retry login after create:", !loginData.error ? "success" : "failed")
     }
-    return { error: error.message }
+  }
+
+  if (loginData.error) {
+    console.error("[v0] Auth Error:", loginData.error.message, "- email:", email)
+    return { error: loginData.error.message }
   }
 
   revalidatePath('/', 'layout')
@@ -158,7 +157,7 @@ export async function login(formData: FormData) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('id')
-    .eq('id', data.user.id)
+    .eq('id', loginData.data.user.id)
     .maybeSingle()
 
   if (profile) {
