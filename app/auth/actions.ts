@@ -24,8 +24,6 @@ export async function submitWellnessSurvey(data: {
   const testPassword = "PUP_Student_2026!"
 
   try {
-    console.log("[v0] Starting Submission for:", data.email)
-
     // 1. AUTH STEP
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email: data.email.toLowerCase().trim(),
@@ -38,7 +36,6 @@ export async function submitWellnessSurvey(data: {
     })
 
     let userId = authData?.user?.id
-    console.log("[v0] Auth step - userId:", userId, "error:", authError?.message)
 
     if (authError) {
       if (authError.message.includes("already been registered")) {
@@ -116,22 +113,15 @@ export async function submitWellnessSurvey(data: {
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
-  // .trim() removes accidental spaces at the beginning or end
   const email = (formData.get('email') as string).trim().toLowerCase()
   const password = (formData.get('password') as string).trim()
-
-  console.log("[v0] Login attempt - email:", email, "password length:", password.length)
 
   const { error, data } = await supabase.auth.signInWithPassword({
     email,
     password
   })
 
-  console.log("[v0] Login response - error:", error?.message, "user:", data.user?.email)
-
   if (error) {
-    // Log the specific error to your terminal to see if it's 
-    // "Email not confirmed" or "Invalid credentials"
     console.error("[v0] Auth Error:", error.message)
     return { error: error.message }
   }
