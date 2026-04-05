@@ -135,15 +135,21 @@ export async function login(formData: FormData) {
       user_metadata: { full_name: email.split('@')[0], role: 'student' }
     })
 
-    console.log("[v0] Auto-create result:", userData?.user?.id ? "success" : "failed", createError?.message)
+    if (createError && !createError.message.includes("already been registered")) {
+      console.error("[v0] Auto-create failed:", createError.message)
+      return { error: `Account creation failed: ${createError.message}` }
+    }
 
-    if (!createError && userData?.user?.id) {
-      // Now try to sign in with the newly created user
+    console.log("[v0] Auto-create result:", userData?.user?.id ? "success" : "failed")
+
+    // If creation succeeded or account already exists, retry login
+    if (!createError || createError.message.includes("already been registered")) {
+      await new Promise(r => setTimeout(r, 1000)) // Wait 1 second for DB sync
       loginData = await supabase.auth.signInWithPassword({
         email,
         password
       })
-      console.log("[v0] Retry login after create:", !loginData.error ? "success" : "failed")
+      console.log("[v0] Retry login after create:", !loginData.error ? "success" : loginData.error?.message)
     }
   }
 
