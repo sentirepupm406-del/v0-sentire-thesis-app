@@ -17,18 +17,18 @@ export async function submitWellnessSurvey(data: {
   fullName: string;
   email: string;
   program: string;
-  yearLevel: string; // Updated to accept yearLevel
+  yearLevel?: string;
   answers: Record<string, string>;
 }) {
   const admin = createAdminClient()
   const testPassword = "PUP_Student_2026!"
 
   try {
-    console.log("--- Starting Submission for:", data.email)
+    console.log("[v0] Starting Submission for:", data.email)
 
     // 1. AUTH STEP
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
-      email: data.email,
+      email: data.email.toLowerCase().trim(),
       password: testPassword,
       email_confirm: true,
       user_metadata: {
@@ -38,11 +38,19 @@ export async function submitWellnessSurvey(data: {
     })
 
     let userId = authData?.user?.id
+    console.log("[v0] Auth step - userId:", userId, "error:", authError?.message)
 
     if (authError) {
       if (authError.message.includes("already been registered")) {
         const { data: users } = await admin.auth.admin.listUsers()
-        userId = users.users.find(u => u.email?.toLowerCase() === data.email.toLowerCase())?.id
+        const existingUser = users.users.find(u => u.email?.toLowerCase() === data.email.toLowerCase())
+        if (existingUser) {
+          userId = existingUser.id
+          // Update password for existing user
+          await admin.auth.admin.updateUserById(userId, {
+            password: testPassword
+          })
+        }
       } else {
         return { error: "Auth Step Failed: " + authError.message }
       }
@@ -112,15 +120,19 @@ export async function login(formData: FormData) {
   const email = (formData.get('email') as string).trim().toLowerCase()
   const password = (formData.get('password') as string).trim()
 
+  console.log("[v0] Login attempt - email:", email, "password length:", password.length)
+
   const { error, data } = await supabase.auth.signInWithPassword({
     email,
     password
   })
 
+  console.log("[v0] Login response - error:", error?.message, "user:", data.user?.email)
+
   if (error) {
     // Log the specific error to your terminal to see if it's 
     // "Email not confirmed" or "Invalid credentials"
-    console.error("Auth Error:", error.message)
+    console.error("[v0] Auth Error:", error.message)
     return { error: error.message }
   }
 

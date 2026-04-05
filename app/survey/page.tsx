@@ -151,6 +151,7 @@ export default function WellnessSurveyPage() {
         fullName,
         email,
         program,
+        yearLevel: '1',
         answers: { ...answers, q20_comments: comments },
       })
       if (result?.error) {
