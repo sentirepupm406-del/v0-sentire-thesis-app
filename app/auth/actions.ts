@@ -122,7 +122,34 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
-    console.error("[v0] Auth Error:", error.message)
+    console.error("[v0] Auth Error:", error.message, "- email:", email)
+    // If login fails, try to create the user on-the-fly if they're using the test password
+    if (password === "PUP_Student_2026!" && email) {
+      const admin = createAdminClient()
+      const { data: userData, error: createError } = await admin.auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true,
+        user_metadata: { full_name: email.split('@')[0], role: 'student' }
+      })
+
+      if (!createError && userData?.user?.id) {
+        console.log("[v0] Auto-created user, attempting sign in...")
+        // Now try to sign in with the newly created user
+        const { error: retryError, data: retryData } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+
+        if (retryError) {
+          console.error("[v0] Retry login failed:", retryError.message)
+          return { error: "Login failed even after user creation: " + retryError.message }
+        }
+
+        revalidatePath('/', 'layout')
+        redirect('/dashboard')
+      }
+    }
     return { error: error.message }
   }
 
