@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 const PROGRAMS = ['DIT', 'DOMT', 'BSOA', 'BEED', 'BPA', 'BSENT']
+const YEAR_LEVELS = ['First Year', 'Second Year', 'Third Year', 'Fourth Year']
 
 const SURVEY_SECTIONS = [
   {
@@ -16,18 +17,107 @@ const SURVEY_SECTIONS = [
     questions: [
       {
         key: 'gender',
-        label: '1. Your Gender',
+        label: 'Your Gender',
         options: ['Female', 'Male', 'Other'],
       },
     ],
   },
   {
-    title: 'Loneliness',
+    title: 'Emotional Awareness (Part 1)',
     questions: [
       {
-        key: 'q2_lonely_1',
-        label: '2. How often do you feel lonely?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q1',
+        label: 'I am clear about my feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q2',
+        label: 'I pay attention to how I feel',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q3',
+        label: 'I experience my emotions as overwhelming and out of control',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q4',
+        label: 'I have no idea how I am feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+    ],
+  },
+  {
+    title: 'Emotional Awareness (Part 2)',
+    questions: [
+      {
+        key: 'q5',
+        label: 'I have difficulty making sense out of my feelings',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q6',
+        label: 'I am attentive to my feelings',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q7',
+        label: 'I know exactly how I am feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q8',
+        label: 'I care about what I am feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+    ],
+  },
+  {
+    title: 'Emotion Regulation (Part 1)',
+    questions: [
+      {
+        key: 'q9',
+        label: 'I am confused about how I feel',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q10',
+        label: 'When I\'m upset, I acknowledge my emotions',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q11',
+        label: 'When I\'m upset, I become angry with myself for feeling that way',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q12',
+        label: 'When I\'m upset, I become embarrassed for feeling that way',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+    ],
+  },
+  {
+    title: 'Emotion Regulation (Part 2)',
+    questions: [
+      {
+        key: 'q13',
+        label: 'When I\'m upset, I have difficulty getting work done',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q14',
+        label: 'When I\'m upset, I become out of control',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q15',
+        label: 'When I\'m upset, I believe that I will remain that way for a long time',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+    ],
+  },
+]
       },
       {
         key: 'q3_lonely_2',
