@@ -25,11 +25,13 @@ export default async function SelectRolePage() {
     .eq('id', user.id)
     .single()
 
-  // If role is already set, redirect to dashboard
+  // If role is already set, redirect to appropriate dashboard
   if (profile?.role === 'student') {
-    redirect('/survey') // Force students to the survey first
-  } else if (profile?.role === 'teacher' || profile?.role === 'admin') {
-    redirect('/dashboard/overview') // Send teachers to their overview
+    redirect('/dashboard') // Students go to wellness dashboard
+  } else if (profile?.role === 'teacher') {
+    redirect('/dashboard/overview') // Teachers to their overview
+  } else if (profile?.role === 'admin') {
+    redirect('/dashboard/admin') // Admins to admin dashboard
   }
 
   return (

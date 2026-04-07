@@ -19,10 +19,13 @@ export default async function DashboardRootPage() {
 
   const userRole = profile?.role || user.user_metadata?.role || 'student'
 
-  // Route based on role
-  if (userRole === 'teacher') {
-    redirect('/dashboard/students')
+  // Route based on role - prioritize role over default
+  if (userRole === 'admin') {
+    redirect('/dashboard/admin')
+  } else if (userRole === 'teacher') {
+    redirect('/dashboard/overview')
   } else {
-    redirect('/dashboard') // This will show the wellness dashboard (handled by layout)
+    // Students go to wellness dashboard
+    redirect('/dashboard')
   }
 }
