@@ -118,9 +118,8 @@ const SURVEY_SECTIONS = [
     ],
   },
 ]
-      },
-      {
-        key: 'q3_lonely_2',
+
+export default function WellnessSurveyPage() {
         label: '3. How often do you feel lonely?',
         options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
       },
@@ -209,6 +208,7 @@ export default function WellnessSurveyPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [program, setProgram] = useState('')
+  const [yearLevel, setYearLevel] = useState('')
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [comments, setComments] = useState('')
 
@@ -217,7 +217,7 @@ export default function WellnessSurveyPage() {
   }
 
   function canProceed(): boolean {
-    if (step === 0) return fullName.trim() !== '' && email.trim() !== '' && program !== ''
+    if (step === 0) return fullName.trim() !== '' && email.trim() !== '' && program !== '' && yearLevel !== ''
     if (step >= 1 && step <= 4) {
       const section = SURVEY_SECTIONS[step - 1]
       return section.questions.every((q) => answers[q.key])
@@ -241,6 +241,7 @@ export default function WellnessSurveyPage() {
         fullName,
         email,
         program,
+        yearLevel,
         answers: { ...answers, q20_comments: comments },
       })
       if (result?.error) {
@@ -352,6 +353,28 @@ export default function WellnessSurveyPage() {
                         }`}
                       >
                         {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-semibold uppercase tracking-wide text-card-foreground">
+                    Year Level
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {YEAR_LEVELS.map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setYearLevel(level)}
+                        className={`py-2 px-2 sm:px-3 border text-xs sm:text-sm font-medium transition-colors rounded ${
+                          yearLevel === level
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background text-foreground border-border hover:bg-secondary'
+                        }`}
+                      >
+                        {level}
                       </button>
                     ))}
                   </div>
