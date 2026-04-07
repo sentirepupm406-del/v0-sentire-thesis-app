@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       .from('profiles_admin')
       .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (!adminProfile) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })

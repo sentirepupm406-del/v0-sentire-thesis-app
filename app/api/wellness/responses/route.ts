@@ -34,13 +34,13 @@ export async function GET(request: NextRequest) {
       .from('profiles_admin')
       .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     const { data: teacherProfile } = await supabase
       .from('profiles_teachers')
       .select('id, department')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (!adminProfile && !teacherProfile) {
       // If neither admin nor teacher, return only their own responses

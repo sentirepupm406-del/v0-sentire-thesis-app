@@ -23,7 +23,7 @@ export default async function SelectRolePage() {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   // If role is already set, redirect to appropriate dashboard
   if (profile?.role === 'student') {

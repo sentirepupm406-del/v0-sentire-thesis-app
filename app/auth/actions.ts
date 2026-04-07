@@ -55,8 +55,8 @@ export async function submitWellnessSurvey(data: {
       id: userId,
       full_name: data.fullName,
       email: data.email,
+      program: data.program,
       course: data.program,
-      year_level: data.yearLevel,
       role: 'student'
     })
 
@@ -64,9 +64,11 @@ export async function submitWellnessSurvey(data: {
 
     // 3. RESPONSES STEP (Updated mapping to match your survey questions)
     const { error: surveyError } = await admin.from('survey_responses').insert({
+      student_id: userId,
       user_id: userId,
       program: data.program,
       gender: data.answers.gender || null,
+      responses: data.answers,
       // Loneliness Section
       q2_lonely_1: data.answers.q2_lonely_1 || null,
       q3_lonely_2: data.answers.q3_lonely_2 || null,
@@ -82,19 +84,15 @@ export async function submitWellnessSurvey(data: {
       q11_depressed_1: data.answers.q11_depressed_1 || null,
       q12_depressed_2: data.answers.q12_depressed_2 || null,
       q13_depressed_3: data.answers.q13_depressed_3 || null,
-      q14_depressed_4: data.answers.q14_depressed_4 || null,
-      q15_depressed_5: data.answers.q15_depressed_5 || null,
-      q20_comments: data.answers.q20_comments || null,
     })
 
     if (surveyError) return { error: "Database Error (Survey): " + surveyError.message }
 
     // 4. LOG STEP (Default mood for registration)
     await admin.from('wellness_logs').insert({
-      user_id: userId,
-      mood: 3, // Neutral start
-      stress: 3,
-      notes: 'Initial Registration Survey',
+      student_id: userId,
+      emotion: 'neutral',
+      reason: 'Initial Registration Survey',
       created_at: new Date().toISOString()
     })
 
@@ -128,14 +126,17 @@ export async function login(formData: FormData) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id')
+    .select('role')
     .eq('id', data.user.id)
     .maybeSingle()
 
-  if (profile) {
-    redirect('/dashboard')
+  // Route based on user role
+  if (profile?.role === 'admin') {
+    redirect('/dashboard/admin')
+  } else if (profile?.role === 'teacher') {
+    redirect('/dashboard/overview')
   } else {
-    redirect('/survey')
+    redirect('/dashboard')
   }
 }
 
