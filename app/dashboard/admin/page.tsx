@@ -15,6 +15,13 @@ export default async function AdminPage() {
     redirect('/auth/login')
   }
 
+  // Check role from user metadata FIRST
+  const userRole = user.user_metadata?.role
+  if (userRole !== 'admin') {
+    redirect('/dashboard')
+  }
+
+  // Fetch additional profile data (but don't block on it)
   let profile = null
   try {
     const { data } = await supabase
@@ -25,10 +32,7 @@ export default async function AdminPage() {
     profile = data
   } catch (error) {
     console.error('[v0] Admin profile fetch error:', error)
-  }
-
-  if (profile?.role !== 'admin') {
-    redirect('/dashboard')
+    // Continue anyway - profile is optional
   }
 
   return (

@@ -15,7 +15,19 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
 
-  // Try to fetch profile - use admin client to bypass RLS for now
+  // Prioritize user metadata role for routing (this is set at signup)
+  const userRole = user.user_metadata?.role || 'student'
+
+  // Route based on role FIRST
+  if (userRole === 'teacher') {
+    redirect('/dashboard/overview')
+  }
+
+  if (userRole === 'admin') {
+    redirect('/dashboard/admin')
+  }
+
+  // For students, fetch additional profile data (but don't block on it)
   let profile = null
   try {
     const { data } = await supabase
@@ -26,16 +38,7 @@ export default async function DashboardPage() {
     profile = data
   } catch (error) {
     console.error('[v0] Profile fetch error:', error)
-  }
-
-  const role = profile?.role || user.user_metadata?.role || 'student'
-
-  if (role === 'teacher') {
-    redirect('/dashboard/overview')
-  }
-
-  if (role === 'admin') {
-    redirect('/dashboard/admin')
+    // Continue anyway - profile is optional
   }
 
   return (

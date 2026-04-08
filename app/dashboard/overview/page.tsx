@@ -15,6 +15,13 @@ export default async function TeacherOverviewPage() {
 
   if (!user) redirect('/auth/login')
 
+  // Check role from user metadata FIRST
+  const userRole = user.user_metadata?.role
+  if (userRole !== 'teacher') {
+    redirect('/dashboard')
+  }
+
+  // Fetch additional profile data (but don't block on it)
   let profile = null
   try {
     const { data } = await supabase
@@ -25,12 +32,7 @@ export default async function TeacherOverviewPage() {
     profile = data
   } catch (error) {
     console.error('[v0] Teacher profile fetch error:', error)
-  }
-
-  const role = profile?.role ?? user.user_metadata?.role ?? 'student'
-
-  if (role !== 'teacher') {
-    redirect('/dashboard')
+    // Continue anyway - profile is optional
   }
 
   return (
