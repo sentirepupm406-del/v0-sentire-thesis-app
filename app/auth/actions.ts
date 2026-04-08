@@ -134,12 +134,12 @@ export async function login(formData: FormData) {
 
   let profile = null
   try {
-    const { data } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
       .maybeSingle()
-    profile = data
+    profile = profileData
   } catch (error) {
     console.error('[v0] Login profile fetch error:', error)
   }
