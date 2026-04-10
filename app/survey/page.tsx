@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 const PROGRAMS = ['DIT', 'DOMT', 'BSOA', 'BEED', 'BPA', 'BSENT']
+const YEAR_LEVELS = ['First Year', 'Second Year', 'Third Year', 'Fourth Year']
 
 const SURVEY_SECTIONS = [
   {
@@ -16,93 +17,103 @@ const SURVEY_SECTIONS = [
     questions: [
       {
         key: 'gender',
-        label: '1. Your Gender',
+        label: 'Your Gender',
         options: ['Female', 'Male', 'Other'],
       },
     ],
   },
   {
-    title: 'Loneliness',
+    title: 'Emotional Awareness (Part 1)',
     questions: [
       {
-        key: 'q2_lonely_1',
-        label: '2. How often do you feel lonely?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q1',
+        label: 'I am clear about my feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q3_lonely_2',
-        label: '3. How often do you feel lonely?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q2',
+        label: 'I pay attention to how I feel',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q4_lonely_3',
-        label: '4. How often do you feel lonely?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q3',
+        label: 'I experience my emotions as overwhelming and out of control',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q5_lonely_4',
-        label: '5. How often do you feel lonely?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q4',
+        label: 'I have no idea how I am feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
     ],
   },
   {
-    title: 'Procrastination',
+    title: 'Emotional Awareness (Part 2)',
     questions: [
       {
-        key: 'q6_procrastinate_1',
-        label: '6. How often do you procrastinate on a daily basis?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q5',
+        label: 'I have difficulty making sense out of my feelings',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q7_procrastinate_2',
-        label: '7. How often do you procrastinate on a daily basis?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q6',
+        label: 'I am attentive to my feelings',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q8_procrastinate_3',
-        label: '8. How often do you procrastinate on a daily basis?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q7',
+        label: 'I know exactly how I am feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q9_procrastinate_4',
-        label: '9. How often do you procrastinate on a daily basis?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
-      },
-      {
-        key: 'q10_procrastinate_5',
-        label: '10. How often do you procrastinate on a daily basis?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q8',
+        label: 'I care about what I am feeling',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
     ],
   },
   {
-    title: 'Depression',
+    title: 'Emotion Regulation (Part 1)',
     questions: [
       {
-        key: 'q11_depressed_1',
-        label: '11. How often do you feel depressed?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q9',
+        label: 'I am confused about how I feel',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q12_depressed_2',
-        label: '12. How often do you feel depressed?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q10',
+        label: 'When I\'m upset, I acknowledge my emotions',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q13_depressed_3',
-        label: '13. How often do you feel depressed?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q11',
+        label: 'When I\'m upset, I become angry with myself for feeling that way',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q14_depressed_4',
-        label: '14. How often do you feel depressed?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q12',
+        label: 'When I\'m upset, I become embarrassed for feeling that way',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+    ],
+  },
+  {
+    title: 'Emotion Regulation (Part 2)',
+    questions: [
+      {
+        key: 'q13',
+        label: 'When I\'m upset, I have difficulty getting work done',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
       {
-        key: 'q15_depressed_5',
-        label: '15. How often do you feel depressed?',
-        options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Very Often'],
+        key: 'q14',
+        label: 'When I\'m upset, I become out of control',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+      },
+      {
+        key: 'q15',
+        label: 'When I\'m upset, I believe that I will remain that way for a long time',
+        options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
       },
     ],
   },
@@ -119,6 +130,7 @@ export default function WellnessSurveyPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [program, setProgram] = useState('')
+  const [yearLevel, setYearLevel] = useState('')
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [comments, setComments] = useState('')
 
@@ -127,7 +139,7 @@ export default function WellnessSurveyPage() {
   }
 
   function canProceed(): boolean {
-    if (step === 0) return fullName.trim() !== '' && email.trim() !== '' && program !== ''
+    if (step === 0) return fullName.trim() !== '' && email.trim() !== '' && program !== '' && yearLevel !== ''
     if (step >= 1 && step <= 4) {
       const section = SURVEY_SECTIONS[step - 1]
       return section.questions.every((q) => answers[q.key])
@@ -151,6 +163,7 @@ export default function WellnessSurveyPage() {
         fullName,
         email,
         program,
+        yearLevel,
         answers: { ...answers, q20_comments: comments },
       })
       if (result?.error) {
@@ -262,6 +275,28 @@ export default function WellnessSurveyPage() {
                         }`}
                       >
                         {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-semibold uppercase tracking-wide text-card-foreground">
+                    Year Level
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {YEAR_LEVELS.map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setYearLevel(level)}
+                        className={`py-2 px-2 sm:px-3 border text-xs sm:text-sm font-medium transition-colors rounded ${
+                          yearLevel === level
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background text-foreground border-border hover:bg-secondary'
+                        }`}
+                      >
+                        {level}
                       </button>
                     ))}
                   </div>

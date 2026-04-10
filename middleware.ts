@@ -31,10 +31,24 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
 
-  // Only redirect to login if not authenticated
-  if (!user && !request.nextUrl.pathname.startsWith('/auth')) {
+  // Public routes that don't require authentication
+  const publicRoutes = ['/', '/auth', '/survey']
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + '/')
+  )
+
+  // If unauthenticated and trying to access protected route, redirect to login
+  if (!user && !isPublicRoute) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+
+  // If authenticated and trying to access auth pages (except callback), allow it
+  // The dashboard page will handle role-based redirects server-side
+  if (user && pathname.startsWith('/auth') && !pathname.includes('callback')) {
+    // Allow users to access auth pages (they'll be redirected to dashboard if appropriate)
+    return response
   }
 
   return response

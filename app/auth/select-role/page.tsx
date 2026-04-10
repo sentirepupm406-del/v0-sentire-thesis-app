@@ -19,17 +19,25 @@ export default async function SelectRolePage() {
   }
 
   // Check if user already has a role selected
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  let profile = null
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    profile = data
+  } catch (error) {
+    console.error('[v0] Select role profile fetch error:', error)
+  }
 
-  // If role is already set, redirect to dashboard
+  // If role is already set, redirect to appropriate dashboard
   if (profile?.role === 'student') {
-    redirect('/survey') // Force students to the survey first
-  } else if (profile?.role === 'teacher' || profile?.role === 'admin') {
-    redirect('/dashboard/overview') // Send teachers to their overview
+    redirect('/dashboard') // Students go to wellness dashboard
+  } else if (profile?.role === 'teacher') {
+    redirect('/dashboard/overview') // Teachers to their overview
+  } else if (profile?.role === 'admin') {
+    redirect('/dashboard/admin') // Admins to admin dashboard
   }
 
   return (

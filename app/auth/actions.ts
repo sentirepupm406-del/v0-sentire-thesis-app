@@ -55,46 +55,52 @@ export async function submitWellnessSurvey(data: {
       id: userId,
       full_name: data.fullName,
       email: data.email,
+      program: data.program,
       course: data.program,
-      year_level: data.yearLevel,
       role: 'student'
     })
 
     if (profileError) return { error: "Database Error (Profile): " + profileError.message }
 
-    // 3. RESPONSES STEP (Updated mapping to match your survey questions)
-    const { error: surveyError } = await admin.from('survey_responses').insert({
+    // 3. RESPONSES STEP (Updated mapping for new emotional awareness questions)
+    const surveyData = {
+      student_id: userId,
       user_id: userId,
       program: data.program,
       gender: data.answers.gender || null,
-      // Loneliness Section
-      q2_lonely_1: data.answers.q2_lonely_1 || null,
-      q3_lonely_2: data.answers.q3_lonely_2 || null,
-      q4_lonely_3: data.answers.q4_lonely_3 || null,
-      q5_lonely_4: data.answers.q5_lonely_4 || null,
-      // Procrastination Section
-      q6_procrastinate_1: data.answers.q6_procrastinate_1 || null,
-      q7_procrastinate_2: data.answers.q7_procrastinate_2 || null,
-      q8_procrastinate_3: data.answers.q8_procrastinate_3 || null,
-      q9_procrastinate_4: data.answers.q9_procrastinate_4 || null,
-      q10_procrastinate_5: data.answers.q10_procrastinate_5 || null,
-      // Depression Section
-      q11_depressed_1: data.answers.q11_depressed_1 || null,
-      q12_depressed_2: data.answers.q12_depressed_2 || null,
-      q13_depressed_3: data.answers.q13_depressed_3 || null,
-      q14_depressed_4: data.answers.q14_depressed_4 || null,
-      q15_depressed_5: data.answers.q15_depressed_5 || null,
-      q20_comments: data.answers.q20_comments || null,
-    })
+      responses: data.answers,
+      survey_category: 'emotional_awareness',
+      // Emotional Awareness Section
+      q1: data.answers.q1 || null,
+      q2: data.answers.q2 || null,
+      q3: data.answers.q3 || null,
+      q4: data.answers.q4 || null,
+      q5: data.answers.q5 || null,
+      q6: data.answers.q6 || null,
+      q7: data.answers.q7 || null,
+      q8: data.answers.q8 || null,
+      // Emotion Regulation Section
+      q9: data.answers.q9 || null,
+      q10: data.answers.q10 || null,
+      q11: data.answers.q11 || null,
+      q12: data.answers.q12 || null,
+      q13: data.answers.q13 || null,
+      q14: data.answers.q14 || null,
+      q15: data.answers.q15 || null,
+    }
+    
+    const { error: surveyError } = await admin.from('survey_responses').insert(surveyData)
 
-    if (surveyError) return { error: "Database Error (Survey): " + surveyError.message }
+    if (surveyError) {
+      console.error("Survey Error:", surveyError)
+      return { error: "Database Error (Survey): " + surveyError.message }
+    }
 
     // 4. LOG STEP (Default mood for registration)
     await admin.from('wellness_logs').insert({
-      user_id: userId,
-      mood: 3, // Neutral start
-      stress: 3,
-      notes: 'Initial Registration Survey',
+      student_id: userId,
+      emotion: 'neutral',
+      reason: 'Initial Registration Survey',
       created_at: new Date().toISOString()
     })
 
@@ -126,16 +132,25 @@ export async function login(formData: FormData) {
 
   revalidatePath('/', 'layout')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('id', data.user.id)
-    .maybeSingle()
+  let profile = null
+  try {
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .maybeSingle()
+    profile = profileData
+  } catch (error) {
+    console.error('[v0] Login profile fetch error:', error)
+  }
 
-  if (profile) {
-    redirect('/dashboard')
+  // Route based on user role
+  if (profile?.role === 'admin') {
+    redirect('/dashboard/admin')
+  } else if (profile?.role === 'teacher') {
+    redirect('/dashboard/overview')
   } else {
-    redirect('/survey')
+    redirect('/dashboard')
   }
 }
 

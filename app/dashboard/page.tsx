@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { WellnessDashboardClient } from '@/components/wellness-dashboard-client'
 
+export const metadata = {
+  title: 'Student Dashboard - Sentire',
+  description: 'Student wellness and academic monitoring dashboard',
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -10,28 +15,32 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
 
-  // Fetch only what we need to determine the route
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Prioritize user metadata role for routing (this is set at signup)
+  const userRole = user.user_metadata?.role || 'student'
 
-  const role = profile?.role || user.user_metadata?.role
-
-  // ---------------------------------------------------------
-  // THE FIX: Server-Side Routing for the base /dashboard path
-  // ---------------------------------------------------------
-  if (role === 'teacher') {
+  // Route based on role FIRST
+  if (userRole === 'teacher') {
     redirect('/dashboard/overview')
   }
 
-  if (role === 'admin') {
+  if (userRole === 'admin') {
     redirect('/dashboard/admin')
   }
 
-  // If the user is a Student (or has no role yet), they stay here 
-  // and render the Wellness Dashboard.
+  // For students, fetch additional profile data (but don't block on it)
+  let profile = null
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle()
+    profile = data
+  } catch (error) {
+    console.error('[v0] Profile fetch error:', error)
+    // Continue anyway - profile is optional
+  }
+
   return (
     <WellnessDashboardClient
       profile={profile}

@@ -1,6 +1,11 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { TeacherOverviewClient } from '@/components/teacher-overview-client'
+import { TeacherDashboardView } from '@/components/teacher-dashboard-view'
+
+export const metadata = {
+  title: 'Teacher Dashboard - Sentire',
+  description: 'Teacher portal for monitoring student wellness',
+}
 
 export default async function TeacherOverviewPage() {
   const supabase = await createClient()
@@ -10,42 +15,30 @@ export default async function TeacherOverviewPage() {
 
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  const role = profile?.role ?? user.user_metadata?.role ?? 'student'
-
-  // Only teachers can access this page
-  if (role !== 'teacher') {
+  // Check role from user metadata FIRST
+  const userRole = user.user_metadata?.role
+  if (userRole !== 'teacher') {
     redirect('/dashboard')
   }
 
-  // Fetch all students
-  const { data: students } = await supabase
-    .from('profiles')
-    .select('id, full_name, student_id, course, year_level, role')
-    .eq('role', 'student')
-
-  // Fetch recent wellness logs
-  const { data: wellnessLogs } = await supabase
-    .from('wellness_logs')
-    .select('id, user_id, mood, stress, logged_at')
-    .order('logged_at', { ascending: false })
-    .limit(100)
-
-  // Fetch academic records
-  const { data: academicRecords } = await supabase
-    .from('academics')
-    .select('id, user_id, subject, grade, units')
+  // Fetch additional profile data (but don't block on it)
+  let profile = null
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role, full_name')
+      .eq('id', user.id)
+      .maybeSingle()
+    profile = data
+  } catch (error) {
+    console.error('[v0] Teacher profile fetch error:', error)
+    // Continue anyway - profile is optional
+  }
 
   return (
-    <TeacherOverviewClient
-      students={students ?? []}
-      wellnessLogs={wellnessLogs ?? []}
-      academicRecords={academicRecords ?? []}
+    <TeacherDashboardView 
+      profile={profile} 
+      email={user.email || ''} 
     />
   )
 }
