@@ -116,46 +116,43 @@ export async function login(formData: FormData) {
   const email = (formData.get('email') as string).trim().toLowerCase()
   const password = (formData.get('password') as string).trim()
 
-  console.log("--- Login Attempt for:", email)
+  console.log("1. Attempting Auth...")
+  const { error: authError, data: authData } = await supabase.auth.signInWithPassword({ email, password })
 
-  const { error, data } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
-
-  if (error) {
-    console.error("Auth Error:", error.message)
-    return { error: error.message }
+  if (authError) {
+    console.log("X Auth Failed:", authError.message)
+    return { error: authError.message }
   }
 
-  console.log("Login Successful! User ID:", data.user.id)
+  console.log("2. Auth Success. Fetching Profile for ID:", authData.user.id)
 
-  // Fetch the role
+  // USE maybeSingle() TO PREVENT CRASHING IF PROFILE IS MISSING
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', data.user.id)
-    .single()
+    .eq('id', authData.user.id)
+    .maybeSingle()
 
-  if (profileError || !profile) {
-    console.error("Profile Fetch Error:", profileError)
-    // Fallback: If no profile found, try to go to students
-    redirect('/dashboard/students')
+  if (profileError) {
+    console.log("X Profile Database Error:", profileError.message)
+    return { error: "Database error: " + profileError.message }
   }
 
-  console.log("User Role:", profile.role)
+  console.log("3. Profile found. Role is:", profile?.role)
 
-  // FINAL REDIRECTS - Matching your specific folder image exactly
-  if (profile.role === 'admin') {
-    console.log("Redirecting to Admin...")
-    redirect('/dashboard/admin')
-  } else if (profile.role === 'teacher' || profile.role === 'faculty') {
-    console.log("Redirecting to Teacher...")
-    redirect('/dashboard/teacher')
-  } else {
-    console.log("Redirecting to Students...")
-    redirect('/dashboard/students')
-  }
+  // IMPORTANT: Revalidate before redirecting
+  revalidatePath('/', 'layout')
+
+  // 4. Manual Logic check
+  let targetPath = '/dashboard/students' // Default fallback
+
+  if (profile?.role === 'admin') targetPath = '/dashboard/admin'
+  if (profile?.role === 'teacher') targetPath = '/dashboard/teacher'
+
+  console.log("4. Redirecting to:", targetPath)
+
+  // THE ACTUAL REDIRECT
+  redirect(targetPath)
 }
 
 export async function signup(formData: FormData) {
