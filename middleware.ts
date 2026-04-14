@@ -21,24 +21,19 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 1. Get the current user
+  // middleware.ts - replace the logic part
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // 2. Define route categories
-  const isAuthPage = pathname.startsWith('/auth')
-  const isDashboardPage = pathname.startsWith('/dashboard')
-  const isSurveyPage = pathname.startsWith('/survey')
-
-  // 3. LOGIC: If NOT logged in and trying to access Dashboard -> Go to Login
-  if (!user && isDashboardPage) {
+  // 1. If NO user and trying to access ANY dashboard route -> FORCE to Login
+  if (!user && pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  // 4. LOGIC: If ALREADY logged in and trying to access Login or Survey -> Go to Dashboard
-  // This prevents the "Auto Back" loop
-  if (user && (isAuthPage || isSurveyPage) && !pathname.includes('callback')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  // 2. If YES user and trying to access Login page -> FORCE to Students Dashboard
+  // This is the "Bypass" that stops the login page from staying still
+  if (user && pathname.startsWith('/auth/login')) {
+    return NextResponse.redirect(new URL('/dashboard/students', request.url))
   }
 
   return response
