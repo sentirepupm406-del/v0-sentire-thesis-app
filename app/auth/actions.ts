@@ -88,7 +88,7 @@ export async function submitWellnessSurvey(data: {
       q14: data.answers.q14 || null,
       q15: data.answers.q15 || null,
     }
-    
+
     const { error: surveyError } = await admin.from('survey_responses').insert(surveyData)
 
     if (surveyError) {
@@ -113,43 +113,36 @@ export async function submitWellnessSurvey(data: {
 
 export async function login(formData: FormData) {
   const supabase = await createClient()
-
-  // .trim() removes accidental spaces at the beginning or end
   const email = (formData.get('email') as string).trim().toLowerCase()
   const password = (formData.get('password') as string).trim()
 
-  const { error, data } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
+  const { error, data } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    // Log the specific error to your terminal to see if it's 
-    // "Email not confirmed" or "Invalid credentials"
     console.error("Auth Error:", error.message)
     return { error: error.message }
   }
 
+  // LOG 1: Confirm we got a user
+  console.log("User authenticated:", data.user.id)
+
   revalidatePath('/', 'layout')
 
-  let profile = null
-  try {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .maybeSingle()
-    profile = profileData
-  } catch (error) {
-    console.error('[v0] Login profile fetch error:', error)
-  }
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .maybeSingle()
 
-  // Route based on user role
+  // LOG 2: Confirm what role we found
+  console.log("User role found:", profile?.role)
+
   if (profile?.role === 'admin') {
     redirect('/dashboard/admin')
   } else if (profile?.role === 'teacher') {
     redirect('/dashboard/overview')
   } else {
+    // If it hits here and loops, check if /dashboard exists in your file structure
     redirect('/dashboard')
   }
 }
