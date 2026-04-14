@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { TeacherPortalClient } from '@/components/teacher-portal-client'
+import TeacherPortalClient from '@/components/teacher-portal-client'
 
 export default async function StudentsPage() {
   const supabase = await createClient()
