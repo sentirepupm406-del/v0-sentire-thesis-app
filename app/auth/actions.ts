@@ -116,26 +116,45 @@ export async function login(formData: FormData) {
   const email = (formData.get('email') as string).trim().toLowerCase()
   const password = (formData.get('password') as string).trim()
 
-  const { error, data } = await supabase.auth.signInWithPassword({ email, password })
+  console.log("--- Login Attempt for:", email)
+
+  const { error, data } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
 
   if (error) {
+    console.error("Auth Error:", error.message)
     return { error: error.message }
   }
 
-  // --- DO NOT wrap the code below in a try/catch ---
-  const { data: profile } = await supabase
+  console.log("Login Successful! User ID:", data.user.id)
+
+  // Fetch the role
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
-    .maybeSingle()
+    .single()
 
-  // This MUST be outside any try/catch blocks
-  if (profile?.role === 'admin') {
+  if (profileError || !profile) {
+    console.error("Profile Fetch Error:", profileError)
+    // Fallback: If no profile found, try to go to students
+    redirect('/dashboard/students')
+  }
+
+  console.log("User Role:", profile.role)
+
+  // FINAL REDIRECTS - Matching your specific folder image exactly
+  if (profile.role === 'admin') {
+    console.log("Redirecting to Admin...")
     redirect('/dashboard/admin')
-  } else if (profile?.role === 'teacher') {
-    redirect('/dashboard/teacher') // Matches your folder
+  } else if (profile.role === 'teacher' || profile.role === 'faculty') {
+    console.log("Redirecting to Teacher...")
+    redirect('/dashboard/teacher')
   } else {
-    redirect('/dashboard/students') // Matches your folder
+    console.log("Redirecting to Students...")
+    redirect('/dashboard/students')
   }
 }
 
