@@ -119,31 +119,23 @@ export async function login(formData: FormData) {
   const { error, data } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    console.error("Auth Error:", error.message)
     return { error: error.message }
   }
 
-  // LOG 1: Confirm we got a user
-  console.log("User authenticated:", data.user.id)
-
-  revalidatePath('/', 'layout')
-
+  // --- DO NOT wrap the code below in a try/catch ---
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
     .maybeSingle()
 
-  // LOG 2: Confirm what role we found
-  console.log("User role found:", profile?.role)
-
+  // This MUST be outside any try/catch blocks
   if (profile?.role === 'admin') {
     redirect('/dashboard/admin')
   } else if (profile?.role === 'teacher') {
-    redirect('/dashboard/teacher')
+    redirect('/dashboard/teacher') // Matches your folder
   } else {
-    // If it hits here and loops, check if /dashboard exists in your file structure
-    redirect('/dashboard/students')
+    redirect('/dashboard/students') // Matches your folder
   }
 }
 
