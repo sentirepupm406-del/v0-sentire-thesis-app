@@ -140,10 +140,10 @@ export async function login(formData: FormData) {
   if (profile?.role === 'admin') {
     redirect('/dashboard/admin')
   } else if (profile?.role === 'teacher') {
-    redirect('/dashboard/overview')
+    redirect('/dashboard/teacher')
   } else {
     // If it hits here and loops, check if /dashboard exists in your file structure
-    redirect('/dashboard')
+    redirect('/dashboard/students')
   }
 }
 
